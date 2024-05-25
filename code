@@ -1,0 +1,64 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Функция для формирования матрицы F
+def form_matrix_F(A, K, N):
+    F = np.copy(A)
+    C = A[N//2:, :N//2]
+    perimeter_product = np.prod(A[0, :N//2] * A[N//2-1, :N//2] * A[:N//2, 0] * A[:N//2, N//2-1])
+    zeros_count = np.sum(C[::2, ::2] == 0)
+
+    if zeros_count > perimeter_product:
+        F[N//2:, :N//2], F[N//2:, N//2:] = F[N//2:, N//2:], F[N//2:, :N//2]
+    else:
+        F[:N//2, :N//2], F[:N//2, N//2:] = F[:N//2, N//2:], F[:N//2, :N//2]
+
+    return F
+
+# Функция для вычисления выражения
+def calculate_expression(A, F, K, N):
+    det_A = np.linalg.det(A)
+    diag_sum_F = np.sum(np.diagonal(F))
+
+    if det_A > diag_sum_F:
+        result = np.linalg.inv(A) @ A.T - K * F
+    else:
+        G = np.tril(A)
+        result = (A + np.linalg.inv(G) - F - np.linalg.inv(F)) * K
+
+    return result
+
+# Ввод чисел K и N
+K, N = map(int, input().split())
+
+# Создание матрицы A
+A = np.random.randint(-10, 11, (N, N))
+
+# Формирование матрицы F
+F = form_matrix_F(A, K, N)
+
+# Вычисление выражения
+result = calculate_expression(A, F, K, N)
+
+# Вывод матриц A и F
+print("Матрица A:")
+print(A)
+print("Матрица F:")
+print(F)
+print("Результат выражения:")
+print(result)
+
+# Построение графиков
+plt.figure(1)
+plt.imshow(A, cmap='hot', interpolation='nearest')
+plt.title('Матрица A')
+
+plt.figure(2)
+plt.imshow(F, cmap='hot', interpolation='nearest')
+plt.title('Матрица F')
+
+plt.figure(3)
+plt.plot(result)
+plt.title('Результат выражения')
+
+plt.show()
